@@ -22,6 +22,7 @@ void setup() {
 
 void loop() {
    printStatus();
+   //scanWifi();
 
    // Connect to WiFi if are not connected
    if (WiFi.status() != WL_CONNECTED) {
@@ -30,6 +31,7 @@ void loop() {
    delay(5000);
 
 }
+
 
 void connectWifiMulti() {
 
