@@ -1,19 +1,28 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
+#define BUTTON_PIN 2
+
 // set the LCD number of columns and rows
 int lcdColumns = 16;
 int lcdRows = 2;
 
+
+// Variables will change:
+int lastState = HIGH; // the previous state from the input pin
+int currentState;     // the current reading from the input pin
+
 LiquidCrystal_I2C lcd(0x27,16,2);
  
 void setup() {
+
   Wire.begin();
   Serial.begin(115200);
   Serial.println("\nI2C Scanner");
   lcd.init();
   lcd.clear();         
   lcd.backlight();      // Make sure backlight is on
+  pinMode(BUTTON_PIN,INPUT_PULLUP);
   
   // Print a message on both lines of the LCD.
   lcd.setCursor(1,0);   //Set cursor to character 2 on line 0
@@ -24,6 +33,15 @@ void setup() {
 }
  
 void loop() {
+   // read the state of the switch/button:
+  currentState = digitalRead(BUTTON_PIN);
+
+  if(lastState == LOW && currentState == HIGH)
+    Serial.println("The state changed from LOW to HIGH");
+
+  // save the last state
+  lastState = currentState;
+
   /*
   byte error, address;
   int nDevices;
