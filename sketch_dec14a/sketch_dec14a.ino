@@ -13,12 +13,24 @@
 #include <WiFiMulti.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
 
 #define LED_RED  2
 #define LED_YELLOW  4
 #define LED_GREEN  5
 
+#define API_REFRESH 300000 //call API ms
+
 const uint32_t connectTimeoutMs = 20000;
+// set the LCD number of columns and rows
+int lcdColumns = 16;
+int lcdRows = 2;
+
+//Initialize LCD with correct dimensions and address
+LiquidCrystal_I2C lcd(0x27,lcdColumns,lcdRows);
+
 
 //URL Endpoint for the API
 String URL = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
@@ -30,6 +42,12 @@ WiFiMulti wifiMulti;
 
 void setup() {
   Serial.begin(115200);
+
+  //Initialize LCD
+
+  lcd.init();
+  lcd.clear();         
+  lcd.backlight();      // Make sure backlight is on
 
   pinMode(LED_RED,OUTPUT);
   pinMode(LED_YELLOW,OUTPUT);
@@ -52,13 +70,15 @@ void loop() {
      turnLED(LED_YELLOW,HIGH);
      connectWifiMulti();
    } else {
+     // we are connected
      turnLED(LED_YELLOW,HIGH);
      callAPI("galatsi%20attiki%20greece");
-     callAPI("xanthi%20greece");
-     callAPI("vilnius%20lithuania");
+     //callAPI("xanthi%20greece");
+     //callAPI("vilnius%20lithuania");
      turnLED(LED_GREEN,HIGH);
+     delay(API_REFRESH);
    }
-   delay(15000);
+
 
 }
 
@@ -77,6 +97,7 @@ void connectWifiMulti() {
     Serial.println("");
     Serial.print("WiFi connected to ");
     Serial.println(WiFi.SSID());
+    displayLCD(1,0,"Connected " + WiFi.SSID());
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
   }
@@ -99,6 +120,11 @@ void printStatus() {
   Serial.println();
 }
 
+void displayLCD(int row, int column, String text) {
+  lcd.setCursor(column,row);   //Set cursor to character 2 on line 0
+  lcd.print(text);
+}
+
 /*
   Turn off all the LEDs and then turn off/on the LED that is passed as parameter
 */ 
@@ -111,10 +137,14 @@ void turnLED(int led, int high_low) {
 
 void callAPI(String place) {
   HTTPClient http;
+  char buffer[80];
 
   String finalURL = URL + place + URL_Parameters;
   Serial.print("Final URL:");
   Serial.print(finalURL);
+
+  sprintf(buffer,"%16.16s","Refresh Data...");
+  displayLCD(0,0,buffer);
 
   //Set HTTP Request Final URL with Location and API key information
   http.begin(finalURL);
@@ -140,11 +170,16 @@ void callAPI(String place) {
     const char* currentTime = obj["currentConditions"]["datetime"].as<const char*>();
     const float currentTemp = obj["currentConditions"]["temp"].as<float>();
     const float currentfeelslike = obj["currentConditions"]["feelslike"].as<float>(); 
+    sprintf(buffer,"%s %s -> %f (%f)","Galatsi",currentTime,currentTemp,currentfeelslike);
+    Serial.print(buffer);
+    sprintf(buffer,"%5.5s %3.1f(%3.1f)",currentTime,currentTemp,currentfeelslike);
+    displayLCD(0,0,buffer);
+    /*
     Serial.print("resolvedAddress=");Serial.println(resolvedAddress);
     Serial.print("currentTime=");Serial.println(currentTime);
     Serial.print("currentTemp=");Serial.println(currentTemp);
     Serial.print("currentfeelslike=");Serial.println(currentfeelslike);
-    
+    */
   
   /*
     const char* description = obj["weather"][0]["description"].as<const char*>();
@@ -162,11 +197,12 @@ void callAPI(String place) {
 */
   } else {
     Serial.println("Error!");
+    sprintf(buffer,"%s (%d)","Error",httpCode);
+    displayLCD(0,0,buffer);
     //lcd.clear();
     //lcd.print("Can't Get DATA!");
   }
 
   http.end();
 
-
-}
+} //callApi
