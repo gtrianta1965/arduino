@@ -21,7 +21,14 @@
 #define LED_YELLOW  4
 #define LED_GREEN  5
 
-#define API_REFRESH 300000 //call API ms
+/* LiquidCrystal LCD pins **
+SCL => GPIO 22
+SDA => GPIO 21
+GND => GND
+VCC => 3V3
+****************************/
+
+unsigned long API_REFRESH = 5*60*1000L; //call API ms
 
 const uint32_t connectTimeoutMs = 20000;
 // set the LCD number of columns and rows
@@ -31,12 +38,13 @@ int lcdRows = 2;
 //Initialize LCD with correct dimensions and address
 LiquidCrystal_I2C lcd(0x27,lcdColumns,lcdRows);
 
-
 //URL Endpoint for the API
 String URL = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
 String URL_Parameters = "?unitGroup=metric&include=current&key=U9ELWL9D9E9CJR9ND72FY6LKP&contentType=json";
 String ApiKey = "U9ELWL9D9E9CJR9ND72FY6LKP";
 
+unsigned long lastTimeCalledAPI = 0;
+unsigned long lastTimeBackLightOn = 0;
 
 WiFiMulti wifiMulti;
 
@@ -44,11 +52,11 @@ void setup() {
   Serial.begin(115200);
 
   //Initialize LCD
-
   lcd.init();
   lcd.clear();         
   lcd.backlight();      // Make sure backlight is on
 
+  //Initialize LED pins
   pinMode(LED_RED,OUTPUT);
   pinMode(LED_YELLOW,OUTPUT);
   pinMode(LED_GREEN,OUTPUT);
@@ -62,21 +70,28 @@ void setup() {
 }
 
 void loop() {
-   printStatus();
+   
+   //printStatus();
    //scanWifi();
 
    // Connect to WiFi if are not connected
    if (WiFi.status() != WL_CONNECTED) {
+     displayLCD(1, 0, "Connecting       ");
      turnLED(LED_YELLOW,HIGH);
+
      connectWifiMulti();
    } else {
      // we are connected
-     turnLED(LED_YELLOW,HIGH);
-     callAPI("galatsi%20attiki%20greece");
+     turnLED(LED_GREEN,HIGH);
+     if ((millis() - lastTimeCalledAPI >= API_REFRESH ) || (lastTimeCalledAPI == 0)){
+        turnLED(LED_YELLOW,HIGH);
+        callAPI("galatsi%20attiki%20greece");
+        turnLED(LED_GREEN,HIGH);
+        lastTimeCalledAPI = millis();
+     }
      //callAPI("xanthi%20greece");
      //callAPI("vilnius%20lithuania");
-     turnLED(LED_GREEN,HIGH);
-     delay(API_REFRESH);
+     //delay(API_REFRESH);
    }
 
 
@@ -206,3 +221,13 @@ void callAPI(String place) {
   http.end();
 
 } //callApi
+
+void print(char * format, ...) {
+  char buffer[200];
+  int result;
+  va_list argptr;
+  va_start(argptr,format);
+  result = vsprintf(buffer, format, argptr);
+  va_end(argptr);
+  Serial.println(buffer);
+}
