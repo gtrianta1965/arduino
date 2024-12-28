@@ -20,6 +20,10 @@
 #define LED_RED  2
 #define LED_YELLOW  4
 #define LED_GREEN  5
+#define TOUCH_PIN 32
+#define API_REFRESH  5*60*1000L //call API ms
+#define LCD_BACKLIGHT_DURATION 10*1000L
+#define TOUCH_THRESHOLD 25
 
 /* LiquidCrystal LCD pins **
 SCL => GPIO 22
@@ -28,7 +32,7 @@ GND => GND
 VCC => 3V3
 ****************************/
 
-unsigned long API_REFRESH = 5*60*1000L; //call API ms
+
 
 const uint32_t connectTimeoutMs = 20000;
 // set the LCD number of columns and rows
@@ -45,6 +49,9 @@ String ApiKey = "U9ELWL9D9E9CJR9ND72FY6LKP";
 
 unsigned long lastTimeCalledAPI = 0;
 unsigned long lastTimeBackLightOn = 0;
+bool          touchActivated = false;
+unsigned long now;
+int           touchValue;
 
 WiFiMulti wifiMulti;
 
@@ -55,6 +62,7 @@ void setup() {
   lcd.init();
   lcd.clear();         
   lcd.backlight();      // Make sure backlight is on
+  lastTimeBackLightOn = millis(); //set it on in the beginning
 
   //Initialize LED pins
   pinMode(LED_RED,OUTPUT);
@@ -71,8 +79,28 @@ void setup() {
 
 void loop() {
    
+   now = millis();
    //printStatus();
    //scanWifi();
+
+   //Check if we need to turn off backlight
+    touchValue = touchRead(TOUCH_PIN);
+    if (touchValue < TOUCH_THRESHOLD) {
+      if (!touchActivated) {
+        Serial.println("Touch activated");
+        lcd.backlight();
+        touchActivated = true;
+        lastTimeBackLightOn = now; 
+      }
+    } 
+
+    //Check if backlight is on and turn it off if colldown passed
+    if (now - lastTimeBackLightOn > LCD_BACKLIGHT_DURATION) {
+      lcd.noBacklight();
+      touchActivated = false;
+    }
+
+    
 
    // Connect to WiFi if are not connected
    if (WiFi.status() != WL_CONNECTED) {
@@ -83,11 +111,11 @@ void loop() {
    } else {
      // we are connected
      turnLED(LED_GREEN,HIGH);
-     if ((millis() - lastTimeCalledAPI >= API_REFRESH ) || (lastTimeCalledAPI == 0)){
+     if ((now - lastTimeCalledAPI >= API_REFRESH ) || (lastTimeCalledAPI == 0)){
         turnLED(LED_YELLOW,HIGH);
         callAPI("galatsi%20attiki%20greece");
         turnLED(LED_GREEN,HIGH);
-        lastTimeCalledAPI = millis();
+        lastTimeCalledAPI = now;
      }
      //callAPI("xanthi%20greece");
      //callAPI("vilnius%20lithuania");
