@@ -1,0 +1,51 @@
+==================================================================================
+
+Esp32
+A list of the 1000 libraries in the architecture esp32.
+
+https://www.arduinolibraries.info/architectures/esp32
+
+==================================================================================
+
+AutoConnect
+ESP8266/ESP32 WLAN configuration at runtime with web interface.
+
+https://www.arduinolibraries.info/libraries/auto-connect
+
+==================================================================================
+
+ESP32 NTP Client-Server: Get Date and Time (Arduino IDE)
+
+https://randomnerdtutorials.com/esp32-date-time-ntp-client-server-arduino/
+
+==================================================================================
+
+ESP32 WebSocket Server: Control Outputs (Arduino IDE)
+
+https://randomnerdtutorials.com/esp32-websocket-server-arduino/
+
+==================================================================================
+
+Interface L298N DC Motor Driver Module with Arduino
+
+https://lastminuteengineers.com/l298n-dc-stepper-driver-arduino-tutorial/?utm_content=cmp-true
+==================================================================================
+
+ESP32 Useful Wi-Fi Library Functions (Arduino IDE)
+
+https://randomnerdtutorials.com/esp32-useful-wi-fi-functions-arduino/#hostname
+
+==================================================================================
+
+ESP32 with Stepper Motor (28BYJ-48 and ULN2003 Motor Driver)
+
+https://randomnerdtutorials.com/esp32-stepper-motor-28byj-48-uln2003/
+
+==================================================================================
+
+ESP32 Web Bluetooth (BLE): Getting Started Guide
+
+https://randomnerdtutorials.com/esp32-web-bluetooth/
+
+==================================================================================
+
