@@ -49,3 +49,9 @@ https://randomnerdtutorials.com/esp32-web-bluetooth/
 
 ==================================================================================
 
+How to Create an ESP32 Web Server with WebSockets in Arduino IDE
+
+https://lastminuteengineers.com/esp32-websocket-tutorial/
+
+==================================================================================
+
