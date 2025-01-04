@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Control</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    button, input[type="range"] {
+      margin: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Car Control Panel</h1>
+  <button id="startStop">Start</button>
+  <button id="direction">Forward</button>
+  <br>
+  <label for="speed">Speed:</label>
+  <input id="speed" type="range" min="0" max="255" value="0">
+  <br>
+  <label for="steering">Steering:</label>
+  <input id="steering" type="range" min="0" max="100" value="50">
+  <script>
+    const ws = new WebSocket(`ws://${location.hostname}:81`);
+    const startStopButton = document.getElementById('startStop');
+    const directionButton = document.getElementById('direction');
+    const speedSlider = document.getElementById('speed');
+    const steeringSlider = document.getElementById('steering');
+
+    let isRunning = false;
+    let isForward = true;
+
+    startStopButton.addEventListener('click', () => {
+      isRunning = !isRunning;
+      ws.send(isRunning ? 'start' : 'stop');
+      startStopButton.textContent = isRunning ? 'Stop' : 'Start';
+    });
+
+    directionButton.addEventListener('click', () => {
+      isForward = !isForward;
+      ws.send(`direction:${isForward ? 'forward' : 'backward'}`);
+      directionButton.textContent = isForward ? 'Forward' : 'Backward';
+    });
+
+    speedSlider.addEventListener('input', () => {
+      ws.send(`speed:${speedSlider.value}`);
+    });
+
+    steeringSlider.addEventListener('input', () => {
+      ws.send(`steering:${steeringSlider.value}`);
+    });
+  </script>
+</body>
+</html>
