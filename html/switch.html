@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toggle Switch</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .slider:before {
+            content: "";
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        input:checked+.slider {
+            background-color: #4caf50;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="toggle-switch">
+        <input type="checkbox" id="switch">
+        <label class="slider" for="switch"></label>
+    </div>
+    <p id="status">Switch is OFF</p>
+    <script>
+        const toggleSwitch = document.getElementById("switch");
+        const statusText = document.getElementById("status");
+
+        toggleSwitch.addEventListener("change", () => {
+            const isChecked = toggleSwitch.checked;
+            statusText.textContent = `Switch is ${isChecked ? "ON" : "OFF"}`;
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Joystick Control</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom right, #1a1a2e, #16213e);
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .joystick-container {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            margin: 50px auto;
+            background: radial-gradient(circle, #2c2c54, #1c1c3c);
+            border: 4px solid #00d4ff;
+            border-radius: 50%;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+            touch-action: none;
+        }
+
+        .joystick {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(to bottom right, #00d4ff, #0066cc);
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            touch-action: none;
+            cursor: pointer;
+        }
+
+        .output {
+            margin-top: 20px;
+            padding: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            width: 80%;
+            max-width: 400px;
+            margin: 20px auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .output p {
+            font-size: 1.2rem;
+            margin: 5px 0;
+        }
+
+        .output span {
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .status-line {
+            font-size: 18px;
+            margin: 10px;
+            padding: 10px;
+            color: white;
+            background-color: gray;
+            border-radius: 5px;
+            width: fit-content;
+            margin: 20px auto;
+        }
+
+        .status-connecting {
+            background-color: orange;
+        }
+
+        .status-connected {
+            background-color: green;
+        }
+
+        .status-error {
+            background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Enhanced Joystick Control</h1>
+    <div id="statusLine" class="status-line status-connecting">Connecting...</div>
+    <div class="joystick-container" id="joystickContainer">
+        <div class="joystick" id="joystick"></div>
+    </div>
+    <div class="output">
+        <p>X: <span id="xValue">0</span></p>
+        <p>Y: <span id="yValue">0</span></p>
+    </div>
+    <script>
+        //const socket = new WebSocket(`ws://${location.hostname}/ws`);
+        const socket = new WebSocket(`ws://192.168.2.36/ws`);
+        const statusLine = document.getElementById("statusLine");
+        const joystickContainer = document.getElementById('joystickContainer');
+        const joystick = document.getElementById('joystick');
+        const xValue = document.getElementById('xValue');
+        const yValue = document.getElementById('yValue');
+
+        // Update WebSocket status
+        function updateStatus(status, className) {
+            statusLine.textContent = status;
+            statusLine.className = `status-line ${className}`;
+        }
+
+        //Setup socket
+        // WebSocket event handlers
+        socket.onopen = () => {
+            updateStatus("Connected", "status-connected");
+        };
+
+        socket.onclose = () => {
+            updateStatus("Disconnected", "status-error");
+        };
+
+        socket.onerror = () => {
+            updateStatus("Error", "status-error");
+        };
+
+        socket.onmessage = (event) => {
+            console.log("Message from server:", event.data);
+        };
+
+
+        let containerRect = joystickContainer.getBoundingClientRect();
+        const maxRadius = containerRect.width / 2;
+        let isDragging = false;
+        joystick.addEventListener('mousedown', startDrag);
+        joystick.addEventListener('touchstart', startDrag);
+        window.addEventListener('mousemove', drag);
+        window.addEventListener('touchmove', drag);
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('touchend', endDrag);
+
+        joystick.style.left = '50%';
+        joystick.style.top = '50%';
+
+        function startDrag(event) {
+            isDragging = true;
+        }
+        function drag(event) {
+            if (!isDragging) return;
+            let clientX = event.touches ? event.touches[0].clientX : event.clientX;
+            let clientY = event.touches ? event.touches[0].clientY : event.clientY;
+            let offsetX = clientX - containerRect.left - maxRadius;
+            let offsetY = clientY - containerRect.top - maxRadius;
+            const distance = Math.sqrt(offsetX ** 2 + offsetY ** 2);
+            if (distance > maxRadius) {
+                const angle = Math.atan2(offsetY, offsetX);
+                offsetX = Math.cos(angle) * maxRadius;
+                offsetY = Math.sin(angle) * maxRadius;
+            }
+            joystick.style.left = `${offsetX + maxRadius}px`;
+            joystick.style.top = `${offsetY + maxRadius}px`;
+            const x = Math.round((offsetX / maxRadius) * 100);
+            const y = Math.round((-offsetY / maxRadius) * 100);
+            xValue.textContent = x;
+            yValue.textContent = y;
+            socket.send(`steering:${x}`);
+            socket.send(`speed:${y}`);
+        }
+        function endDrag() {
+            isDragging = false;
+            joystick.style.left = '50%';
+            joystick.style.top = '50%';
+            xValue.textContent = 0;
+            yValue.textContent = 0;
+            socket.send(`steering:50`);
+            socket.send(`speed:0`);
+        }
+        window.addEventListener('resize', () => {
+            containerRect = joystickContainer.getBoundingClientRect();
+        });
+    </script>
+</body>
+
+</html>
