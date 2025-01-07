@@ -78,6 +78,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
     data[len] = 0;
+    Serial.printf("Data=%s\n",data);
     if (strcmp((char*)data, "toggle") == 0) {
       ledState = !ledState;
       ws.textAll(String(ledState));
@@ -94,6 +95,7 @@ void eventHandler(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEvent
       Serial.printf("WebSocket client #%u disconnected\n", client->id());
       break;
     case WS_EVT_DATA:
+      Serial.println("Data arrived");
       handleWebSocketMessage(arg, data, len);
       digitalWrite(ledPin, ledState);
       break;

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Sliders with Buttons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .slider-container {
+            margin-top: 50px;
+        }
+
+        .slider {
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        .value {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .label {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .button-group {
+            margin-top: 20px;
+        }
+
+        .button-group button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+        }
+
+        .button-group button:hover {
+            background-color: #0056b3;
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 18px;
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>WebSocket Slider Controls</h1>
+    <div class="slider-container">
+        <!-- Slider 1 -->
+        <div class="label">Speed of Motor 1</div>
+        <input id="slider1" type="range" min="1" max="100" value="50" class="slider">
+        <div class="value">Value: <span id="slider1Value">50</span></div>
+        <div class="button-group">
+            <button id="motor1Left">Motor Left</button>
+            <button id="motor1Stop">Stop</button>
+            <button id="motor1Right">Motor Right</button>
+        </div>
+
+        <!-- Slider 2 -->
+        <div class="label">Speed of Motor 2</div>
+        <input id="slider2" type="range" min="1" max="100" value="50" class="slider">
+        <div class="value">Value: <span id="slider2Value">50</span></div>
+        <div class="button-group">
+            <button id="motor2Left">Motor Left</button>
+            <button id="motor2Stop">Stop</button>
+            <button id="motor2Right">Motor Right</button>
+        </div>
+
+        <div id="status" class="status">Connecting to WebSocket...</div>
+    </div>
+
+    <script>
+        // WebSocket initialization
+        const ws = new WebSocket('ws://192.168.2.36/ws');
+
+        const statusElement = document.getElementById('status');
+        const slider1 = document.getElementById('slider1');
+        const slider2 = document.getElementById('slider2');
+        const slider1Value = document.getElementById('slider1Value');
+        const slider2Value = document.getElementById('slider2Value');
+
+        window.onbeforeunload = window.onunload = () => {
+            if (ws && ws.readyState === ws.OPEN) {
+                ws.close();
+                console.log("WebSocket closed on page unload.");
+            }
+        };
+
+        // Update WebSocket connection status
+        ws.onopen = function () {
+            statusElement.textContent = 'WebSocket connected';
+        };
+
+        ws.onclose = function () {
+            statusElement.textContent = 'WebSocket disconnected';
+            statusElement.classList.add('error');
+        };
+
+        ws.onerror = function (error) {
+            statusElement.textContent = 'WebSocket error: ' + error;
+            statusElement.classList.add('error');
+        };
+
+        // Send slider 1 value on input change
+        slider1.addEventListener('input', function () {
+            const value = slider1.value;
+            slider1Value.textContent = value;
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ slider1Value: value }));
+            }
+        });
+
+        // Send slider 2 value on input change
+        slider2.addEventListener('input', function () {
+            const value = slider2.value;
+            slider2Value.textContent = value;
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ slider2Value: value }));
+            }
+        });
+
+        // Motor 1 buttons
+        document.getElementById('motor1Left').addEventListener('click', function () {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ motor1: 'left' }));
+            }
+        });
+
+        document.getElementById('motor1Stop').addEventListener('click', function () {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ motor1: 'stop' }));
+            }
+        });
+
+        document.getElementById('motor1Right').addEventListener('click', function () {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ motor1: 'right' }));
+            }
+        });
+
+        // Motor 2 buttons
+        document.getElementById('motor2Left').addEventListener('click', function () {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ motor2: 'left' }));
+            }
+        });
+
+        document.getElementById('motor2Stop').addEventListener('click', function () {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ motor2: 'stop' }));
+            }
+        });
+
+        document.getElementById('motor2Right').addEventListener('click', function () {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ motor2: 'right' }));
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,5 +1,10 @@
 ==================================================================================
 
+ESP32 Master Links
+https://gist.github.com/dragos-constantin-stoica/9b981ffbafbc83537d04af473a843277
+
+==================================================================================
+
 Esp32
 A list of the 1000 libraries in the architecture esp32.
 
@@ -52,6 +57,11 @@ https://randomnerdtutorials.com/esp32-web-bluetooth/
 How to Create an ESP32 Web Server with WebSockets in Arduino IDE
 
 https://lastminuteengineers.com/esp32-websocket-tutorial/
+
+==================================================================================
+How to assemble the 2WD Smart Robot Car Chassis Kit for Arduino
+
+https://www.youtube.com/watch?v=H78t6dnSoG0
 
 ==================================================================================
 

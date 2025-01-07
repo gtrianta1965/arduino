@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .status-line {
+            font-size: 18px;
+            margin: 10px;
+            padding: 10px;
+            color: white;
+            background-color: gray;
+            border-radius: 5px;
+            width: fit-content;
+            margin: 20px auto;
+        }
+
+        .status-connecting {
+            background-color: orange;
+        }
+
+        .status-connected {
+            background-color: green;
+        }
+
+        .status-error {
+            background-color: red;
+        }
+
+        .button {
+            display: block;
+            width: 150px;
+            margin: 20px auto;
+            padding: 15px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .slider-container {
+            margin: 30px auto;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 50px;
+            background: #ddd;
+            outline: none;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        label {
+            font-size: 20px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .slider-value {
+            font-size: 18px;
+            margin-top: 10px;
+            color: #333;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="statusLine" class="status-line status-connecting">Connecting...</div>
+
+    <h1>Car Control</h1>
+    <button class="button" id="startStopBtn">Start</button>
+    <button class="button" id="directionBtn">Forward</button>
+
+    <div class="slider-container">
+        <label for="speedSlider">Speed (0 - 255)</label>
+        <input type="range" class="slider" id="speedSlider" min="0" max="255" value="0">
+        <div id="speedValue" class="slider-value">0</div>
+    </div>
+
+    <div class="slider-container">
+        <label for="steeringSlider">Steering (0 - 100)</label>
+        <input type="range" class="slider" id="steeringSlider" min="0" max="100" value="50">
+        <div id="steeringValue" class="slider-value">50</div>
+    </div>
+
+    <script>
+        const statusLine = document.getElementById("statusLine");
+        const socket = new WebSocket(`ws://${location.hostname}/ws`);
+        const startStopButton = document.getElementById('startStopBtn');
+        const directionButton = document.getElementById('directionBtn');
+        const speedSlider = document.getElementById('speedSlider');
+        const steeringSlider = document.getElementById('steeringSlider');
+        let isRunning = false;
+        let isForward = true;
+
+        // Update WebSocket status
+        function updateStatus(status, className) {
+            statusLine.textContent = status;
+            statusLine.className = `status-line ${className}`;
+        }
+
+        // WebSocket event handlers
+        socket.onopen = () => {
+            updateStatus("Connected", "status-connected");
+        };
+
+        socket.onclose = () => {
+            updateStatus("Disconnected", "status-error");
+        };
+
+        socket.onerror = () => {
+            updateStatus("Error", "status-error");
+        };
+
+        socket.onmessage = (event) => {
+            console.log("Message from server:", event.data);
+        };
+
+        // Button and slider handlers
+        document.getElementById("startStopBtn").onclick = () => {
+            isRunning = !isRunning;
+            socket.send(isRunning ? "start" : "stop");
+            document.getElementById("startStopBtn").innerText = isRunning ? "Stop" : "Start";
+        };
+
+        document.getElementById("directionBtn").onclick = () => {
+            isForward = !isForward;
+            socket.send(`direction:${isForward ? 'forward' : 'backward'}`);
+            //socket.send(isForward ? "forward" : "backward");
+            document.getElementById("directionBtn").innerText = isForward ? "Forward" : "Backward";
+        };
+
+        document.getElementById("speedSlider").oninput = (e) => {
+            const speedValue = e.target.value;
+            document.getElementById("speedValue").innerText = speedValue;
+            socket.send(`speed:${speedValue}`);
+        };
+
+        document.getElementById("steeringSlider").oninput = (e) => {
+            const steeringValue = e.target.value;
+            document.getElementById("steeringValue").innerText = steeringValue;
+            socket.send(`steering:${steeringValue}`);
+        };
+
+        // Set initial status
+        updateStatus("Connecting...", "status-connecting");
+    </script>
+</body>
+
+</html>
