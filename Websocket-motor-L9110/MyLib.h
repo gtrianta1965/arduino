@@ -1,8 +1,10 @@
 #ifndef MYLIB_H
 #define MYLIB_H
 
+#define DEBUG true
+
 #define LOG(f_, ...) \
-  { Serial.printf((f_), ##__VA_ARGS__); }
+  { if (DEBUG) {Serial.printf((f_), ##__VA_ARGS__);} }
 
 
 #endif
