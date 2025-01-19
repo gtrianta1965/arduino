@@ -114,7 +114,7 @@ void controlMotors() {
   if (speed < 0) { isForward = false; isRunning = true;}
   if (speed > 0) { isForward = true; isRunning = true;}
   _speed = map(abs(speed),0,100,50,255);
-  _steering = map(steering,-100,100,0,100);
+  _steering = map(steering,-100,100,0,100); // normalize steering between 0 and 100
 
   if (!isRunning) {
     analogWrite(A1, 0);
@@ -129,31 +129,18 @@ void controlMotors() {
   leftSpeed = _speed;
   rightSpeed = _speed;
 
+  //adopt left and right speed according to steering
   if (_steering > 50) {
     // reduce speed of left weel
     rightSpeed = _speed - _speed * (_steering - 50 )/50;
-    //rightSpeed = map(steering, 0, 50, 0, speed);
-    //leftSpeed  = map(steering,50,100,speed,0);
     leftSpeed = _speed;
   } 
   if (_steering < 50) {
     // reduce speed of left weel
     leftSpeed = _speed - _speed * (50 - _steering )/50;
-    //rightSpeed = map(steering, 0, 50, 0, speed);
-    //leftSpeed  = map(steering,50,100,speed,0);
     rightSpeed = _speed;
   } 
-
-
-  /*
-  if (steering < 50) {  // Turn left
-    rightSpeed = map(steering, 0, 50, 0, speed);
-  } else if (steering > 50) {  // Turn right
-    leftSpeed = map(steering, 50, 100, speed, 0);
-  }
-  */
-
-
+  
   // Set direction
   if (isForward) {
     analogWrite(A2, 0);

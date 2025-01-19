@@ -89,6 +89,23 @@
         .status-error {
             background-color: red;
         }
+
+        .button {
+            display: block;
+            width: 150px;
+            margin: 20px auto;
+            padding: 15px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 
@@ -102,6 +119,10 @@
         <p>X: <span id="xValue">0</span></p>
         <p>Y: <span id="yValue">0</span></p>
     </div>
+    <div>
+        <button class="button" id="config">Config</button>
+        <button class="button" id="server"></button>
+    </div>
     <script>
         //const socket = new WebSocket(`ws://${location.hostname}/ws`);
         const socket = new WebSocket(`ws://192.168.2.36/ws`);
@@ -110,6 +131,11 @@
         const joystick = document.getElementById('joystick');
         const xValue = document.getElementById('xValue');
         const yValue = document.getElementById('yValue');
+
+        const serverButton = document.getElementById("server");
+        let isLocal = true;
+        serverButton.innerText = serverButton.innerText = isLocal ? "WS (Local)" : "WS (Remote)";
+
 
         // Update WebSocket status
         function updateStatus(status, className) {
@@ -185,6 +211,14 @@
         window.addEventListener('resize', () => {
             containerRect = joystickContainer.getBoundingClientRect();
         });
+
+        serverButton.onclick = () => {
+            isLocal = !isLocal
+            serverButton.innerText = isLocal ? "WS (Local)" : "WS (Remote)";
+
+        };
+
+
     </script>
 </body>
 
