@@ -67,3 +67,8 @@ https://www.youtube.com/watch?v=H78t6dnSoG0
 esp32-starter-kit
 
 https://docs.sunfounder.com/projects/esp32-starter-kit/en/latest/index.html
+
+==================================================================================
+github micropython many examples for ESP32
+
+https://github.com/simonmonk/prog_esp32

@@ -1,12 +1,16 @@
-import pycom
-import time
+from machine import Pin,Signal
+from time import sleep
 
-pycom.heartbeat(False)
 
+button = Pin(13,Pin.IN, Pin.PULL_DOWN) 
+led = Pin(2,Pin.OUT)
+#led = Signal(2,Pin.OUT,invert = True)  #LOW means the led is ON
+coolDown = 0
+button_value = 0;
 while True:
-    pycom.rgbled(0xFF0000)  # Red
-    time.sleep(1)
-    pycom.rgbled(0x00FF00)  # Green
-    time.sleep(1)
-    pycom.rgbled(0x0000FF)  # Blue
-    time.sleep(1)
+    button_value = button.value()
+    print("Button",button_value)
+    led.value(button_value)
+
+
+    sleep(0.01)
