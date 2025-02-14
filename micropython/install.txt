@@ -106,3 +106,11 @@ Now, your ESP32 is back to using the Arduino IDE! 🚀
 esptool --port COM5 erase_flash
 esptool --port COM5 --baud 460800 write_flash -z 0x1000 ESP32_GENERIC-20241129-v1.24.1.bin
 
+for ESP32 C3 Zero:
+list the ports:
+pyserial-ports.exe  -> Notice the com port that ESP32 C3 is connected (COM6)
+esptool --port COM6 erase_flash
+
+esptool --port COM6 --baud 460800 write_flash -z 0 ESP32_GENERIC_C3-20241129-v1.24.1.bin
+
+
