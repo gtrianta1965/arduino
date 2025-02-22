@@ -2,7 +2,7 @@ import machine, neopixel
 import time
 
 n = 8
-p = 5
+p = 3
 
 np = neopixel.NeoPixel(machine.Pin(p), n)
 

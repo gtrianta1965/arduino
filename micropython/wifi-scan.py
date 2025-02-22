@@ -1,6 +1,9 @@
 import network
 import time
 
+
+
+
 # Define your SSIDs and passwords
 NETWORKS = {
     "TP-Link_1196": "50874811",
@@ -9,8 +12,8 @@ NETWORKS = {
 
 def scan_and_connect():
     wlan = network.WLAN(network.STA_IF)
-    wlan.ifconfig(("192.168.2.210","255.255.255.0","192.168.2.1","192.168.2.1"))
-    #wlan.active(True)
+    wlan.ifconfig(("192.168.2.213","255.255.255.0","192.168.2.1","192.168.2.1"))
+    wlan.active(True)
     
     if wlan.isconnected():
         print(f"We are connected. {wlan.ifconfig()} {wlan.config('essid')}")
@@ -42,14 +45,14 @@ def scan_and_connect():
         print(f"Connecting to {best_ssid} with signal strength {best_rssi}dBm")
         wlan.connect(best_ssid, NETWORKS[best_ssid])
         
-        for _ in range(10):  # Wait up to 10 seconds for connection
+        for _ in range(20):  # Wait up to 10 seconds for connection
             if wlan.isconnected():
                 print("Connected!")
                 print("IP Address:", wlan.ifconfig()[0])
                 return
             time.sleep(1)
         
-        print("Failed to connect.")
+        print("Failed to connect.", wlan.status())
     else:
         print("No known networks found.")
 
