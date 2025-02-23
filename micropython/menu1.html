@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neopixel Controller</title>
+    <script>
+        let ws;
+        
+        // Function to connect to WebSocket
+        function connectWebSocket() {
+            ws = new WebSocket(`ws://${window.location.host}/ws`);
+            
+            // Handle messages from the server
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log("Received:", data);
+
+                // Update UI based on the received data
+                if (data.switch1 !== undefined) {
+                    document.getElementById('switch1').checked = data.switch1 === "true";
+                }
+                if (data.switch2 !== undefined) {
+                    document.getElementById('switch2').checked = data.switch2 === "true";
+                }
+                if (data.slider1 !== undefined) {
+                    document.getElementById('slider1').value = data.slider1;
+                    document.getElementById('slider1_value').textContent = data.slider1;
+                }
+                if (data.slider2 !== undefined) {
+                    document.getElementById('slider2').value = data.slider2;
+                    document.getElementById('slider2_value').textContent = data.slider2;
+                }
+                if (data.num1 !== undefined) {
+                    document.getElementById('num1').value = data.num1;
+                }
+                if (data.num2 !== undefined) {
+                    document.getElementById('num2').value = data.num2;
+                }
+            };
+        }
+
+        // Function to send updates when a slider, number, or switch is changed
+        function sendUpdate(id) {
+            const value = document.getElementById(id).value;
+            ws.send(JSON.stringify({ [id]: value }));
+        }
+
+        // Update the label next to the slider in real time
+        function updateLabel(id) {
+            const slider = document.getElementById(id);
+            const label = document.getElementById(id + "_value");
+            label.textContent = slider.value;
+            sendUpdate(id);
+        }
+
+        // Connect WebSocket and fetch initial state on page load
+        window.onload = connectWebSocket;
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            max-width: 350px;
+            margin: auto;
+        }
+
+        .control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 15px 0;
+            padding: 10px;
+            background: #282828;
+            border-radius: 8px;
+        }
+
+        label {
+            flex: 1;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #00c8ff;
+        }
+
+        input[type="range"] {
+            flex: 2;
+            margin: 0 10px;
+            width: 100%;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            text-align: center;
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+            background: #333;
+            color: white;
+        }
+
+        .slider-label {
+            padding-right: 10px;
+            width: 50px;
+            text-align: center;
+        }
+
+        .button {
+            background: #00c8ff;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Neopixel Controller</h2>
+
+        <div class="control">
+            <label for="switch1">Switch 1</label>
+            <input type="checkbox" id="switch1" onchange="sendUpdate('switch1')">
+        </div>
+
+        <div class="control">
+            <label for="switch2">Switch 2</label>
+            <input type="checkbox" id="switch2" onchange="sendUpdate('switch2')">
+        </div>
+
+        <div class="control">
+            <label for="slider1" class="slider-label">Slider 1</label>
+            <input type="range" id="slider1" min="0" max="100" value="50" oninput="updateLabel('slider1')">
+            <span id="slider1_value">50</span>
+        </div>
+
+        <div class="control">
+            <label for="slider2" class="slider-label">Slider 2</label>
+            <input type="range" id="slider2" min="10" max="200" value="50" oninput="updateLabel('slider2')">
+            <span id="slider2_value">50</span>
+        </div>
+
+        <div class="control">
+            <label for="num1">Number 1</label>
+            <input type="number" id="num1" min="0" max="100" value="10" oninput="sendUpdate('num1')">
+        </div>
+
+        <div class="control">
+            <label for="num2">Number 2</label>
+            <input type="number" id="num2" min="0" max="500" value="100" oninput="sendUpdate('num2')">
+        </div>
+
+        <button class="button" onclick="sendUpdate('apply')">Apply Settings</button>
+    </div>
+
+</body>
+</html>

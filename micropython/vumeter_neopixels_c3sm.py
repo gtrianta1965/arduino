@@ -29,7 +29,7 @@ audio_pin_r.atten(ADC.ATTN_11DB)
 #audio_pin.atten(ADC.ATTN_0DB)
 
 
-thresholds = []
+thresholds = [100, 116, 136, 160, 187, 219, 256, 300]
 
 def get_thresholds(count,min, max):
 
@@ -49,9 +49,8 @@ def get_thresholds(count,min, max):
         
     return log_values
 
-
-
 def update_vu_meter(level, np):
+    
     """Update LEDs based on the smoothed signal level."""
     red = 0
     for i in range(8):
@@ -60,7 +59,7 @@ def update_vu_meter(level, np):
         if i> 6:
             red = 100
         if level >= thresholds[i]:
-            np[i] =                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         (int(red * BRIGHTNESS),int((100-red) * BRIGHTNESS),0)
+            np[i] = (int(red * BRIGHTNESS),int((100-red) * BRIGHTNESS),0)
         else:
             np[i] = (0,0,0)
     np.write()
@@ -76,6 +75,8 @@ while True:
     
     value = audio_pin_r.read()
     update_vu_meter(value,np_r)
+    
+    #sleep(0.001)
     
     #this is for internal led pick
     led.value(0 if value > 100 else 1)
