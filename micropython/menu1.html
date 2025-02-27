@@ -37,13 +37,34 @@
                 if (data.num2 !== undefined) {
                     document.getElementById('num2').value = data.num2;
                 }
+                if (data.text1 !== undefined) {
+                    document.getElementById('text1').value = data.text1;
+                }
+                if (data.text2 !== undefined) {
+                    document.getElementById('text2').value = data.text2;
+                }                
             };
         }
 
         // Function to send updates when a slider, number, or switch is changed
         function sendUpdate(id) {
-            const value = document.getElementById(id).value;
-            ws.send(JSON.stringify({ [id]: value }));
+            if (id !== undefined) {
+               const value = document.getElementById(id).value;
+               ws.send(JSON.stringify({ [id]: value }));
+            }
+            else {
+                const data = {
+                    switch1: document.getElementById('switch1').checked ? "true" : "false",
+                    switch2: document.getElementById('switch2').checked ? "true" : "false",
+                    slider1: document.getElementById('slider1').value,
+                    slider2: document.getElementById('slider2').value,
+                    num1: document.getElementById('num1').value,
+                    num2: document.getElementById('num2').value,
+                    text1: document.getElementById('text1').value,
+                    text2: document.getElementById('text2').value                
+                };
+                ws.send(JSON.stringify(data));
+            }
         }
 
         // Update the label next to the slider in real time
@@ -115,6 +136,16 @@
             color: white;
         }
 
+        input[type="text"] {
+            width: 60%;
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+            background: #333;
+            color: white;
+        }
+
         .slider-label {
             padding-right: 10px;
             width: 50px;
@@ -170,7 +201,17 @@
             <input type="number" id="num2" min="0" max="500" value="100" oninput="sendUpdate('num2')">
         </div>
 
-        <button class="button" onclick="sendUpdate('apply')">Apply Settings</button>
+        <div class="control">
+            <label for="text1">Text 1</label>
+            <input type="text" id="text1" maxlength="50" oninput="sendUpdate('text1')">
+        </div>
+
+        <div class="control">
+            <label for="text2">Text 2</label>
+            <input type="text" id="text2" maxlength="50" oninput="sendUpdate('text2')">
+        </div>        
+
+        <button class="button" onclick="sendUpdate()">Apply Settings</button>
     </div>
 
 </body>

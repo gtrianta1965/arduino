@@ -3,13 +3,26 @@ from microdot import Microdot, Response,send_file
 from microdot.websocket import with_websocket
 import json
 import uasyncio as asyncio
+from machine import Pin
+#import network
+import urequests
+from  wifilib import wifilib
+
+led = Pin(5,Pin.OUT)
 
 
-a = w()
-a.connect(scan = True)
+async def blink_led():
+    global wlan
+    while True:
+        if not wlan.isconnected():
+           led.value(not led.value())
+           #print("Blinking")
+           await asyncio.sleep(0.4)
+        else:
+           led.on()
+           await asyncio.sleep(2)
 
-
-
+wlan = wifilib()
 app = Microdot()
 Response.default_content_type = 'text/html'
 
@@ -61,8 +74,25 @@ async def websocket_handler(request, ws: WebSocket):
     print("WebSocket Disconnected")
     return ''
 
+async def connect_wifi():
+    global wlan
+    await wlan.connect(scan = True)
+async def start_server():
+    print("Starting Microdot server...")
+    await app.start_server(port=80,debug=True)
+    
+async def main():
+    task1 = asyncio.create_task(blink_led())
+    task2 = asyncio.create_task(connect_wifi())
+    task3 = asyncio.create_task(start_server())
+
+    # Run all tasks indefinitely
+    await asyncio.gather(task1, task2, task3)
+    
+
 # Start the server
-app.run(host='0.0.0.0', port=80, debug = True)
+asyncio.run(main())
+
 
 
 

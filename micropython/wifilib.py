@@ -1,6 +1,8 @@
 import network
 import time
 import asyncio
+from config import ConfigManager
+import binascii
 
 class wifilib:
     NETWORKS = {
@@ -10,18 +12,20 @@ class wifilib:
     best_ssid = None
     best_rssi = -100  # Very low signal strength to start
     
-    def __init__(self):
+    def __init__(self,hostname = "ESP32C3SM2"):
         print("Wifilib initialized")
+        config = ConfigManager()
+        self.hostname = config.get("hostname")
+        if self.hostname is not None:
+            print(f"hostname={self.hostname} (from config)")
+        else:
+            print(f"No hostname found in config. Default {hostname}")
+            self.hostname = hostname
+        
         self.wlan = network.WLAN(network.STA_IF)
-        self.wlan.active(False)
-        time.sleep(2)
+        print("MAC Address:",binascii.hexlify(self.wlan.config('mac'), ':').decode())
  
-        self.wlan.active(True)
-        time.sleep(2)
-        self.wlan.disconnect()
-        time.sleep(2)
-        self.wlan.config(dhcp_hostname="ESP32C3SM2")
-        time.sleep(2)
+        
     def reconnect(self):
         print("try to reconnect")
         self.wlan = network.WLAN(network.STA_IF)
@@ -32,12 +36,26 @@ class wifilib:
         self.wlan.disconnect()
         time.sleep(2)
         self.connect()
-    def connect(self, scan = False):
+    async def connect(self, scan = False):
         print("Connect called")
+        
+        self.wlan.active(False)
+        await asyncio.sleep(2)
+ 
+        self.wlan.active(True)
+        await asyncio.sleep(2)
+        self.wlan.disconnect()
+        await asyncio.sleep(2)
+        network.hostname(self.hostname)
+        self.wlan.config(dhcp_hostname=self.hostname)  #txpower=76)  # txpower is a magic value to enhance the signal especially for ESP32 C3 Super Mini
+        await asyncio.sleep(2)
+        self.wlan.active(True)        
+        
+        
         if scan:
             self.list_wifi()
         if self.wlan.isconnected():
-            print(f"We are connected. {self.wlan.ifconfig()} {self.wlan.config('essid')}")
+            print(f"We are connected. {self.wlan.ifconfig()} {self.wlan.config('essid')}, hostname={self.hostname}")
         else:
             if self.best_ssid:
                 print(f"Connecting to {self.best_ssid} with signal strength {self.best_rssi}dBm")
@@ -45,10 +63,10 @@ class wifilib:
                 
                 while not self.wlan.isconnected():
                     print(f".{self.wlan.status()}", end="")
-                    time.sleep(1)
+                    await asyncio.sleep(1)
 
                 print("\nConnected to:", self.best_ssid)
-                print("IP Address:", self.wlan.ifconfig()[0])
+                print("IP Address:", self.wlan.ifconfig()[0],"Hostname",self.hostname)
             else:
                 print("No known networks found.")
    

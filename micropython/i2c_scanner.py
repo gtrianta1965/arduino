@@ -4,7 +4,7 @@
 # https://projetsdiy.fr - https://diyprojects.io (dec. 2017)
 
 import machine
-i2c = machine.SoftI2C(scl=machine.Pin(5), sda=machine.Pin(4))
+i2c = machine.SoftI2C(scl=machine.Pin(9), sda=machine.Pin(8))
 
 print('Scan i2c bus...')
 devices = i2c.scan()
