@@ -48,8 +48,16 @@
 
         // Function to send updates when a slider, number, or switch is changed
         function sendUpdate(id) {
+            let value
             if (id !== undefined) {
-               const value = document.getElementById(id).value;
+               if (document.getElementById(id).type === "checkbox") {
+                 value = document.getElementById(id).checked ? "true" : "false"
+                 console.log("id is check box with value",value)
+               }
+               else {
+                  value = document.getElementById(id).value;
+                  console.log("id is not check box with value",value)
+               }
                ws.send(JSON.stringify({ [id]: value }));
             }
             else {
@@ -149,7 +157,7 @@
         .slider-label {
             padding-right: 10px;
             width: 50px;
-            text-align: center;
+            /*text-align: center;*/
         }
 
         .button {

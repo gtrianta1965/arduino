@@ -19,8 +19,11 @@ async def blink_led():
            #print("Blinking")
            await asyncio.sleep(0.4)
         else:
-           led.on()
-           await asyncio.sleep(2)
+           if (parameters['switch1'] == "true"):
+              led.on()
+           else:
+              led.off()
+           await asyncio.sleep(0.2)
 
 wlan = wifilib()
 app = Microdot()
@@ -28,8 +31,8 @@ Response.default_content_type = 'text/html'
 
 # Store initial parameter values
 parameters = {
-    "switch1": False,
-    "switch2": False,
+    "switch1": "true",
+    "switch2": "false",
     "slider1": 128,
     "slider2": 50,
     "num1": 5,
@@ -48,7 +51,7 @@ def index(request):
 @app.route('/ws')
 @with_websocket
 async def websocket_handler(request, ws: WebSocket):
-    print("WebSocket Connected")
+    print("WebSocket Connected",ws)
 
     # Send initial values
     await ws.send(json.dumps(parameters))
@@ -77,17 +80,33 @@ async def websocket_handler(request, ws: WebSocket):
 async def connect_wifi():
     global wlan
     await wlan.connect(scan = True)
+    
 async def start_server():
     print("Starting Microdot server...")
     await app.start_server(port=80,debug=True)
     
+async def monitor_wifi():
+    while True:
+        if (not wlan.isconnected()):
+            print("Monitor WIFI: Lost connection, try to reconnect")
+            await connect_wifi()
+        else:
+            print("Monitor WIFI: We are connected",)
+        await asyncio.sleep(20)
+    
 async def main():
     task1 = asyncio.create_task(blink_led())
     task2 = asyncio.create_task(connect_wifi())
+    await task2
+    
+    
     task3 = asyncio.create_task(start_server())
+    task4 = asyncio.create_task(monitor_wifi())
+    
 
     # Run all tasks indefinitely
-    await asyncio.gather(task1, task2, task3)
+    await asyncio.gather(task1, task3,task4)
+    
     
 
 # Start the server

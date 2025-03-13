@@ -9,13 +9,12 @@ class wifilib:
         "TP-Link_1196": "50874811",
         "Vodafone-E77640838" : "4JAbcK3GGxKN3sr6"
     }
-    best_ssid = None
-    best_rssi = -100  # Very low signal strength to start
     
-    def __init__(self,hostname = "ESP32C3SM2"):
+    def __init__(self,hostname = "ESP32C3SM2", monitor_time = 30):
         print("Wifilib initialized")
         config = ConfigManager()
         self.hostname = config.get("hostname")
+        self.monitor_time = monitor_time
         if self.hostname is not None:
             print(f"hostname={self.hostname} (from config)")
         else:
@@ -25,6 +24,8 @@ class wifilib:
         self.wlan = network.WLAN(network.STA_IF)
         print("MAC Address:",binascii.hexlify(self.wlan.config('mac'), ':').decode())
  
+        self.best_ssid = None
+        self.best_rssi = -100  # Very low signal strength to start
         
     def reconnect(self):
         print("try to reconnect")
@@ -47,7 +48,7 @@ class wifilib:
         self.wlan.disconnect()
         await asyncio.sleep(2)
         network.hostname(self.hostname)
-        self.wlan.config(dhcp_hostname=self.hostname)  #txpower=76)  # txpower is a magic value to enhance the signal especially for ESP32 C3 Super Mini
+        self.wlan.config(dhcp_hostname=self.hostname,txpower=76)  #txpower=76)  # txpower is a magic value to enhance the signal especially for ESP32 C3 Super Mini
         await asyncio.sleep(2)
         self.wlan.active(True)        
         
@@ -77,6 +78,8 @@ class wifilib:
            print(f"Not connected, status={self.wlan.status()}")
     def list_wifi(self, show_details = True):
         available_networks = self.wlan.scan()
+        self.best_ssid = None
+        self.best_rssi = -100  # Very low signal strength to start
         
         for net in available_networks:
             ssid = net[0].decode('utf-8')
@@ -89,6 +92,16 @@ class wifilib:
         print(f"Best wifi is {self.best_ssid} with signal strength {self.best_rssi}dBm")
     def isconnected(self):
         return self.wlan.isconnected()
+    
+    async def monitor():
+        while True:
+            if (not wlan.isconnected()):
+                print("Monitor WIFI: Lost connection, try to reconnect")
+                await self.connect_wifi()
+            else:
+                print("Monitor WIFI: We are connected",)
+        await asyncio.sleep(self.monitor_time)
+        
 
 if __name__ == "__main__":
     a = wifilib()
